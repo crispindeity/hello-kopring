@@ -12,6 +12,7 @@ class TeamServiceTest : DescribeSpec({
     data class Team(
         var id: Long? = null,
         val name: String,
+        var managerId: Long? = null,
     )
 
     class TeamFakeRepository {

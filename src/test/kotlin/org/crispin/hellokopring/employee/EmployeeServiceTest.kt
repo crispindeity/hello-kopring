@@ -15,7 +15,7 @@ class EmployeeServiceTest : DescribeSpec({
     data class Employee(
         val id: Long?,
         val name: String,
-        var teamId: Long? = null,
+        val teamId: Long? = null,
         var isManager: Boolean = false,
         val enteringDate: LocalDate,
         val birthday: LocalDate,
