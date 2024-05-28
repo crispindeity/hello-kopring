@@ -4,48 +4,15 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
+import org.crispin.hellokopring.mini.team.domain.Team
+import org.crispin.hellokopring.mini.team.repository.TeamRepository
+import org.crispin.hellokopring.mini.team.service.TeamService
+import org.crispin.hellokopring.mock.TeamFakeRepository
 
 class TeamServiceTest : DescribeSpec({
 
-    data class Team(
-        var id: Long? = null,
-        val name: String,
-        var managerId: Long? = null,
-    )
-
-    class TeamFakeRepository {
-        val storage: MutableMap<Long, Team> = ConcurrentHashMap()
-        var sequence: AtomicLong = AtomicLong(1L)
-
-
-        fun save(team: Team): Team {
-            val id = team.id ?: sequence.getAndIncrement()
-            storage[id] = team.copy(id = id)
-            return storage[id]!!
-        }
-
-        fun findAll(): List<Team> {
-            return storage.values.toList()
-        }
-
-    }
-
-    class TeamService(
-        val teamRepository: TeamFakeRepository
-    ) {
-        fun register(team: Team): Team {
-            return teamRepository.save(team)
-        }
-
-        fun retrieveAll(): List<Team> {
-            return teamRepository.findAll()
-        }
-    }
-
     lateinit var teamService: TeamService
-    lateinit var teamRepository: TeamFakeRepository
+    lateinit var teamRepository: TeamRepository
 
     beforeTest {
         teamRepository = TeamFakeRepository()
