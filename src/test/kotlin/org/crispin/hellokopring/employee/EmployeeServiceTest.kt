@@ -6,52 +6,16 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.crispin.hellokopring.mini.employee.domain.Employee
+import org.crispin.hellokopring.mini.employee.repository.EmployeeRepository
+import org.crispin.hellokopring.mini.employee.service.EmployeeService
+import org.crispin.hellokopring.mock.EmployeeFakeRepository
 import java.time.LocalDate
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
 
 class EmployeeServiceTest : DescribeSpec({
 
-    data class Employee(
-        val id: Long?,
-        val name: String,
-        val teamId: Long? = null,
-        var isManager: Boolean = false,
-        val enteringDate: LocalDate,
-        val birthday: LocalDate,
-    )
-
-    class EmployeeFakeRepository {
-
-        private val storage: MutableMap<Long, Employee> = ConcurrentHashMap()
-        private var sequence: AtomicLong = AtomicLong(1L)
-
-        fun save(employee: Employee): Employee {
-            val id = employee.id ?: sequence.getAndIncrement()
-            storage[id] = employee.copy(id = id)
-            return storage[id]!!
-        }
-
-        fun findAll(): List<Employee> {
-            return storage.values.stream().toList() ?: emptyList()
-        }
-    }
-
-    class EmployeeService(
-        val employeeRepository: EmployeeFakeRepository
-    ) {
-        fun register(employee: Employee): Employee {
-            return employeeRepository.save(employee)
-        }
-
-        fun retrieveAll(): List<Employee> {
-            return employeeRepository.findAll()
-        }
-    }
-
-
     lateinit var employeeService: EmployeeService
-    lateinit var employeeRepository: EmployeeFakeRepository
+    lateinit var employeeRepository: EmployeeRepository
 
     beforeTest {
         employeeRepository = EmployeeFakeRepository()
