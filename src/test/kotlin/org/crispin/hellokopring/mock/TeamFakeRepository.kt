@@ -19,4 +19,8 @@ class TeamFakeRepository : TeamRepository {
     override fun findAll(): List<Team> {
         return storage.values.toList()
     }
+
+    override fun findById(id: Long): Team? {
+        return storage.values.find { it.id == id }
+    }
 }

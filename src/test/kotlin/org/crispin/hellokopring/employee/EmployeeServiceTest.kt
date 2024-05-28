@@ -1,6 +1,7 @@
 package org.crispin.hellokopring.employee
 
 import io.kotest.assertions.assertSoftly
+import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -9,17 +10,24 @@ import io.kotest.matchers.shouldNotBe
 import org.crispin.hellokopring.mini.employee.domain.Employee
 import org.crispin.hellokopring.mini.employee.repository.EmployeeRepository
 import org.crispin.hellokopring.mini.employee.service.EmployeeService
+import org.crispin.hellokopring.mini.team.repository.TeamRepository
 import org.crispin.hellokopring.mock.EmployeeFakeRepository
+import org.crispin.hellokopring.mock.TeamFakeRepository
 import java.time.LocalDate
 
 class EmployeeServiceTest : DescribeSpec({
 
     lateinit var employeeService: EmployeeService
     lateinit var employeeRepository: EmployeeRepository
+    lateinit var teamRepository: TeamRepository
 
     beforeTest {
         employeeRepository = EmployeeFakeRepository()
-        employeeService = EmployeeService(employeeRepository)
+        teamRepository = TeamFakeRepository()
+        employeeService = EmployeeService(
+            employeeRepository,
+            teamRepository
+        )
     }
 
     describe("직원 서비스 테스트") {
@@ -38,10 +46,29 @@ class EmployeeServiceTest : DescribeSpec({
                     )
 
                     // when
-                    val employeeId: Employee = employeeService.register(employee)
+                    val registeredEmployee: Employee = employeeService.register(employee)
 
                     // then
-                    employeeId.id shouldBe 1L
+                    registeredEmployee.id shouldBe 1L
+                }
+            }
+
+            describe("직원 등록 실패 테스트") {
+
+                it("등록되지 않은 팀에 직원을 등록하는 경우 예외가 발생해야 한다.") {
+                    // given
+                    val employee = Employee(
+                        name = "테스트 직원1",
+                        teamId = 1L,
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        employeeService.register(employee)
+                    }.message shouldBe "등록되지 않은 팀 아이디 입니다. ${employee.teamId}"
+
                 }
             }
         }
