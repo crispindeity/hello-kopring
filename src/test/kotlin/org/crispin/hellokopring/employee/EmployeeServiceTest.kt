@@ -1,6 +1,7 @@
 package org.crispin.hellokopring.employee
 
 import io.kotest.assertions.assertSoftly
+import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -10,6 +11,7 @@ import io.kotest.matchers.shouldNotBe
 import org.crispin.hellokopring.mini.employee.domain.Employee
 import org.crispin.hellokopring.mini.employee.repository.EmployeeRepository
 import org.crispin.hellokopring.mini.employee.service.EmployeeService
+import org.crispin.hellokopring.mini.team.domain.Team
 import org.crispin.hellokopring.mini.team.repository.TeamRepository
 import org.crispin.hellokopring.mock.EmployeeFakeRepository
 import org.crispin.hellokopring.mock.TeamFakeRepository
@@ -51,6 +53,25 @@ class EmployeeServiceTest : DescribeSpec({
                     // then
                     registeredEmployee.id shouldBe 1L
                 }
+
+                it("직원 등록 시 매니저 설정이 가능해야 한다.") {
+                    // given
+                    val team = Team(name = "테스트1팀")
+                    val employee = Employee(
+                        name = "테스트 직원1",
+                        teamId = 1L,
+                        isManager = true,
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+                    teamRepository.save(team)
+
+                    // when
+                    val registeredEmployee: Employee = employeeService.register(employee)
+
+                    // then
+                    registeredEmployee.isManager shouldBe true
+                }
             }
 
             describe("직원 등록 실패 테스트") {
@@ -68,7 +89,21 @@ class EmployeeServiceTest : DescribeSpec({
                     shouldThrowExactly<IllegalArgumentException> {
                         employeeService.register(employee)
                     }.message shouldBe "등록되지 않은 팀 아이디 입니다. ${employee.teamId}"
+                }
 
+                it("팀에 등록 되어 있지 않은 직원을 매니저로 등록 시 예외가 발생해야 한다.") {
+                    // given
+                    val employee = Employee(
+                        name = "테스트 직원1",
+                        isManager = true,
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        employeeService.register(employee)
+                    }.message shouldBe "팀에 등록되지 않은 멤버는 매니저로 설정할 수 없습니다. ${employee.id}"
                 }
             }
         }
