@@ -19,4 +19,8 @@ class EmployeeFakeRepository : EmployeeRepository {
     override fun findAll(): List<Employee> {
         return storage.values.stream().toList() ?: emptyList()
     }
+
+    override fun findById(id: Long): Employee? {
+        return storage.values.find { it.id == id }
+    }
 }
