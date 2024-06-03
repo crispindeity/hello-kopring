@@ -8,6 +8,7 @@ class EmployeeService(
     private val employeeRepository: EmployeeRepository,
     private val teamRepository: TeamRepository
 ) {
+
     fun register(employee: Employee): Employee {
         verifyTeamId(employee)
         verifyManagerRegisterEligibility(employee)
@@ -16,6 +17,23 @@ class EmployeeService(
 
     fun retrieveAll(): List<Employee> {
         return employeeRepository.findAll()
+    }
+
+    fun modifyPosition(id: Long) {
+        val employee = employeeRepository.findById(id)
+            ?: throw IllegalArgumentException("등록되지 않은 직원 아이디입니다. $id")
+
+        require(employee.teamId != null) {
+            "팀에 등록되지 않은 직원입니다. ${employee.id}"
+        }
+
+        val team = teamRepository.findById(employee.teamId)!!
+
+        team.modifyManager(employee.id!!)
+        teamRepository.save(team)
+
+        employee.modifyPosition()
+        employeeRepository.save(employee)
     }
 
     private fun verifyTeamId(employee: Employee) {

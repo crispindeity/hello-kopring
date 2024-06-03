@@ -9,4 +9,8 @@ data class Employee(
     var isManager: Boolean = false,
     val enteringDate: LocalDate,
     val birthday: LocalDate,
-)
+) {
+    fun modifyPosition() {
+        this.isManager = !isManager
+    }
+}
