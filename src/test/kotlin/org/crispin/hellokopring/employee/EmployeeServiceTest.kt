@@ -108,6 +108,37 @@ class EmployeeServiceTest : DescribeSpec({
             }
         }
 
+        describe("직원 직위 수정 테스트") {
+
+            describe("직원 직위 수정 실패 테스트") {
+
+                it("등록되지 않은 직원의 직위를 수정하는 경우 예외가 발생해야 한다.") {
+                    // given
+                    val employeeId = 1L
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        employeeService.modifyPosition(employeeId)
+                    }.message shouldBe "등록되지 않은 직원 아이디 입니다. $employeeId"
+                }
+
+                it("팀에 등록되지 않은 직원의 직위를 수정하는 경우 예외가 발생해야 한다.") {
+                    // given
+                    val employee = Employee(
+                        name = "테스트 팀원1",
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+                    val registeredEmployee = employeeService.register(employee)
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        employeeService.modifyPosition(registeredEmployee.id!!)
+                    }.message shouldBe "팀에 등록되지 않은 직원 입니다. ${registeredEmployee.id}"
+                }
+            }
+        }
+
         describe("직원 조회 테스트") {
 
             describe("직원 조회 성공 테스트") {
