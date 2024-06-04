@@ -1,5 +1,6 @@
 package org.crispin.hellokopring.team
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
@@ -108,6 +109,87 @@ class TeamServiceTest : DescribeSpec({
 
                     // when
                     retrieveAll.shouldBeEmpty()
+                }
+            }
+        }
+
+        describe("팀 매니저 등록 테스트") {
+
+            describe("팀 매니저 등록 성공 테스트") {
+
+                it("정상적으로 팀 매니저 등록 시, 등록에 성공해야 한다.") {
+                    // given
+                    val team = Team(name = "테스트 1팀")
+                    val employee = Employee(
+                        name = "테스트 팀원1",
+                        teamId = 1L,
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+                    teamService.register(team)
+                    employeeRepository.save(employee)
+
+                    // when
+                    val managerRegisteredTeam =
+                        teamService.managerRegister(1L, 1L)
+
+                    // then
+                    managerRegisteredTeam.managerId shouldBe 1L
+                }
+
+                it("팀 매니저 등록 시, 직원의 포지션이 변경되어야 한다.") {
+                    // given
+                    val team = Team(name = "테스트 1팀")
+                    val newManagerEmployee = Employee(
+                        name = "테스트 팀원2",
+                        teamId = 1L,
+                        isManager = false,
+                        enteringDate = LocalDate.of(2023, 5, 28),
+                        birthday = LocalDate.of(1998, 9, 9),
+                    )
+                    teamService.register(team)
+                    employeeRepository.save(newManagerEmployee)
+
+                    // when
+                    val newManagerRegisterTeam =
+                        teamService.managerRegister(1L, 1L)
+
+                    // then
+                    assertSoftly {
+                        newManagerRegisterTeam.managerId shouldBe 1L
+                        employeeRepository.findById(1L)!!.isManager shouldBe true
+                    }
+                }
+            }
+
+            describe("팀 매니저 등록 실패 테스트") {
+
+                it("팀의 일원이 아닌 직원을 팀 매니저로 지정하면, 예외가 발생 해야한다.") {
+                    // given
+                    val team = Team(name = "테스트 1팀")
+                    val employee = Employee(
+                        name = "테스트 팀원1",
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+                    teamService.register(team)
+                    employeeRepository.save(employee)
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        teamService.managerRegister(1L, 1L)
+                    }.message shouldBe "팀에 등록되지 않은 직원 아이디 입니다. ${1L}"
+                }
+
+                it("등록되지 않은 직원을 팀 매니저로 지정하면, 예외가 발생 해야한다.") {
+                    // given
+                    val team = Team(name = "테스트 1팀")
+                    teamService.register(team)
+
+                    // when & then
+                    shouldThrowExactly<IllegalArgumentException> {
+                        teamService.managerRegister(1L, 1L)
+                    }.message shouldBe "존재하지 않는 직원 아이디 입니다. ${1L}"
                 }
             }
         }
