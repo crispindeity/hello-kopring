@@ -12,6 +12,7 @@ class EmployeeService(
     fun register(employee: Employee): Employee {
         verifyTeamId(employee)
         verifyManagerRegisterEligibility(employee)
+        // TODO: 기존 등록 매니저 처리
         return employeeRepository.save(employee)
     }
 
@@ -31,6 +32,8 @@ class EmployeeService(
 
         team.modifyManager(employee.id!!)
         teamRepository.save(team)
+
+        // TODO: 기존 등록 되어 있던 매니저 변경
 
         employee.modifyPosition()
         employeeRepository.save(employee)
