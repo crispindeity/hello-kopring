@@ -27,7 +27,7 @@ class TeamServiceTest : DescribeSpec({
 
                 it("정상 적인 팀 정보 입력 시 등록에 성공 해야 한다.") {
                     // given
-                    val team = Team(name = "테스트 1팀")
+                    val team: Team = Team.createTeam(name = "테스트1팀")
 
                     // when
                     val registeredTeam: Team = teamService.register(team)
@@ -44,8 +44,8 @@ class TeamServiceTest : DescribeSpec({
 
                 it("팀 조회 시 등록된 모든 팀의 정보가 조회 되어야 한다.") {
                     // given
-                    val team1 = Team(name = "테스트 1팀")
-                    val team2 = Team(name = "테스트 2팀")
+                    val team1: Team = Team.createTeam(name = "테스트1팀")
+                    val team2: Team = Team.createTeam(name = "테스트2팀")
                     teamService.register(team1)
                     teamService.register(team2)
 

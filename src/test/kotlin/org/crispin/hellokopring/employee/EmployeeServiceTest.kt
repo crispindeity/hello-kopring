@@ -1,7 +1,6 @@
 package org.crispin.hellokopring.employee
 
 import io.kotest.assertions.assertSoftly
-import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -56,7 +55,7 @@ class EmployeeServiceTest : DescribeSpec({
 
                 it("직원 등록 시 매니저 설정이 가능해야 한다.") {
                     // given
-                    val team = Team(name = "테스트1팀")
+                    val team: Team = Team.createTeam(name = "테스트1팀")
                     val employee = Employee(
                         name = "테스트 직원1",
                         teamId = 1L,
@@ -71,6 +70,29 @@ class EmployeeServiceTest : DescribeSpec({
 
                     // then
                     registeredEmployee.isManager shouldBe true
+                }
+
+                describe("직원 등록 시 매니저로 등록 하면서 기존에 등록되어 있는 매니저 가 있는 경우 서로 변경 되어야 한다.") {
+                    // given
+                    val team: Team = Team.createTeam(name = "테스트1팀")
+                    val oldManagerEmployee = Employee(
+                        name = "이전 매니저 직원",
+                        teamId = 1L,
+                        isManager = true,
+                        enteringDate = LocalDate.of(2024, 5, 28),
+                        birthday = LocalDate.of(1999, 9, 9),
+                    )
+                    val newManagerEmployee = oldManagerEmployee.copy(
+                        name = "뉴 매니저 직원"
+                    )
+                    teamRepository.save(team)
+                    employeeService.register(oldManagerEmployee)
+
+                    // when
+                    val response: Employee = employeeService.register(newManagerEmployee)
+
+                    // then
+                    team.managerId shouldBe response.id
                 }
             }
 
